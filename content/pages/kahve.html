@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahve Uygulaması</title>
+    <style>
+        /* Google Fonts - Montserrat zamonaviy ko'rinish beradi */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+        :root {
+            --bg-dark: #1a1a1a;        /* Umumiy fon */
+            --card-bg: #2d1b15;       /* Kartochka foni (to'q jigarrang) */
+            --input-bg: #3d2b24;      /* Input foni */
+            --accent: #d2a679;        /* Qahva ko'pigi rangi (oltinrang/jigarrang) */
+            --text-main: #ffffff;     /* Asosiy matn */
+            --text-muted: #a68b81;    /* Yordamchi matn */
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at center, #2d1b15 0%, #1a1a1a 100%);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        /* Asosiy konteyner */
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 380px;
+            padding: 30px 25px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(210, 166, 121, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Inputlar bloki */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-left: 12px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            height: 58px; /* Barmoq bilan bosishga qulay */
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 0 18px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            background: #4a352d;
+            box-shadow: 0 0 10px rgba(210, 166, 121, 0.2);
+        }
+
+        input::placeholder {
+            color: #6d544b;
+        }
+
+        /* Tugma stili */
+        button {
+            width: 100%;
+            height: 60px;
+            background: var(--accent);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 8px 20px rgba(210, 166, 121, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        /* Tugmani bosganda telefon vibratsiyasiga o'xshash effekt */
+        button:active {
+            transform: scale(0.96);
+            background: #b58d63;
+        }
+
+        /* Status xabari (Muvaffaqiyatli yoki xato) */
+        #statusMsg {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            min-height: 24px;
+            transition: 0.3s;
+        }
+
+        /* Animatsiya - Kirib kelish effekti */
+        .container {
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        footer {
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        #statusMsg {
+            color: red;
+            animation: slideUp 1s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Kichik ekranlar uchun moslashuv (320px gacha) */
+        @media (max-width: 350px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h2 { font-size: 1.3rem; }
+            input, button { height: 52px; }
+        }
+    </style>
+</head>
+<body>
+        <div class="container">
+            <h2>☕ Kaç kahve alıyorsunuz?</h2>
+            
+            <div class="input-group">
+                <label>İSMİNİZ</label>
+                <input type="text" id="userName" placeholder="İsminizi yazın...">
+            </div>
+
+            <div class="input-group">
+                <label>ALDIĞINIZ KAHVE SAYISI</label>
+                <input type="number" id="coffeeCount" placeholder="0" min="0">
+            </div>
+
+            <button onclick="sendData()">Kaydet</button>
+            <div class="status" id="statusMsg"></div>
+        </div>
+        <footer>
+            <a href="http://www.ysfsoft.com">YSF SOFT</a>
+        </footer>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+            import { getDatabase, ref, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+            // Firebase konfigiz (siz yuborgan ma'lumotlar kiritildi)
+            const firebaseConfig = {
+                apiKey: "AIzaSyDDSoZluOQAw8nrMQkD6TNlUH5-cXDL0uY",
+                authDomain: "kahve-31e6b.firebaseapp.com",
+                databaseURL: "https://kahve-31e6b-default-rtdb.firebaseio.com",
+                projectId: "kahve-31e6b",
+                storageBucket: "kahve-31e6b.firebasestorage.app",
+                messagingSenderId: "698549764546",
+                appId: "1:698549764546:web:b3cb13ebbb4d0b1e63965b"
+            };
+
+            // Firebase-ni ishga tushirish
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+
+            // SAHIFA YUKLANGANDA: Ismni xotiradan tekshirish
+            document.addEventListener("DOMContentLoaded", () => {
+                const savedName = localStorage.getItem("kahveUserName");
+                if (savedName) {
+                    document.getElementById('userName').value = savedName;
+                }
+            });
+
+            // JO'NATISH FUNKSIYASI
+            window.sendData = function() {
+                const nameInput = document.getElementById('userName');
+                const countInput = document.getElementById('coffeeCount');
+                const statusMsg = document.getElementById('statusMsg');
+
+                const name = nameInput.value.trim();
+                const count = countInput.value;
+
+                // Validatsiya
+                if (name === "" || count === "") {
+                    statusMsg.style.color = "#FFB6C1";
+                    statusMsg.innerText = "Gerekli bilgileri girin!";
+                    return;
+                }
+
+                // Ismni xotiraga saqlab qo'yish
+                localStorage.setItem("kahveUserName", name);
+
+                // Sanani formatlash (Masalan: "Yanvar 2026")
+                const d = new Date();
+                const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+                                "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                const currentPath = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
+                // Firebase-ga yuborish (mavjud songa kiritilganini qo'shadi)
+                const updates = {};
+                updates[`/${currentPath}/${name}`] = increment(parseInt(count));
+
+                statusMsg.style.color = "#d2a679";
+                statusMsg.innerText = "Bir saniye...";
+
+                update(ref(db), updates)
+                    .then(() => {
+                        statusMsg.style.color = "#d2a679";
+                        statusMsg.innerText = "Afiyet olsun! ☕";
+                        
+                        // Faqat qahva sonini tozalaymiz, ism joyida qoladi
+                        countInput.value = "";
+                        
+                        // 3 soniyadan keyin xabarni o'chirish
+                        setTimeout(() => { statusMsg.innerText = ""; }, 3000);
+                    })
+                    .catch((error) => {
+                        statusMsg.style.color = "#ff4444";
+                        statusMsg.innerText = "Hata oluştu, yeniden deneyin.";
+                        console.error("Firebase Error:", error);
+                    });
+            };
+        </script>
+</body>
+</html>
